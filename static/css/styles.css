@@ -1,0 +1,144 @@
+/* 0. Full‐viewport reset & base */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #f7f7f8;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* 1. Body as flex container, center both axes */
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;    /* vertical centering */
+  align-items: center;        /* horizontal centering */
+  height: 100vh;
+  transition: justify-content 0.4s ease;
+}
+
+/* 2. Once chat is “started,” push down but keep center horizontally */
+body.started {
+  justify-content: flex-end;
+  align-items: center;        /* keep it in the middle */
+}
+
+/* 3. Chat container (card) */
+#card {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;             /* absolute horizontal centering */
+  background: #ffffff;
+  overflow-x: visible;        /* allow buttons full visibility */
+  transition: height 0.4s ease;
+  height: auto;               /* initially only as tall as its content */
+}
+
+/* 4. On started, expand to full height and switch to grid */
+body.started #card {
+  display: grid;
+  grid-template-rows: 1fr auto;  /* logs fill, input pinned below */
+  height: 100vh;
+  overflow: hidden;              /* grid’s rows manage their own scroll */
+}
+
+/* 5. Logs pane: hidden until “started,” then scrolls within its cell */
+#logs {
+  display: none;
+}
+body.started #logs {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  gap: 12px;
+  overflow-y: auto;
+  min-height: 0;               /* necessary for flex/grid scroll to work */
+  grid-row: 1;
+}
+
+/* 6. Chat input bar: always full-width, pinned in grid row 2 */
+#chatbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;                    /* space between input & buttons */
+  width: 100%;
+  padding: 12px 16px;
+  border-top: 1px solid #e2e2e2;
+  background: #ffffff;
+  box-sizing: border-box;
+  grid-row: 2;
+}
+
+/* 7. Text input: shrinkable so buttons never get pushed out */
+#topic {
+  flex: 1;
+  min-width: 0;                /* allows it to shrink below its content width */
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1.5;
+  background: #fafafa;
+  transition: border-color 0.2s, background 0.2s;
+}
+#topic:focus {
+  border-color: #a3a3a3;
+  background: #ffffff;
+  outline: none;
+}
+
+/* 8. “Go” button */
+#send {
+  height: 40px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 8px;
+  background: #10a37f;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+#send:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+#send:hover:not(:disabled) {
+  background: #0e8c6d;
+}
+
+/* 9. “Stop” button (red) */
+#stop-Btn {
+  height: 40px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 8px;
+  background: #e53e3e;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#stop-Btn:hover {
+  background: #c53030;
+}
+
+/* 10. Chat bubbles */
+.log-entry {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: #f1f1f1;
+  color: #111111;
+  font-size: 16px;
+  line-height: 1.4;
+  margin: 4px 0;
+  align-self: flex-start;
+}
+.log-entry.active {
+  background: #e2e2e2;
+}
+.log-entry.user {
+  background: #d3f3eb;
+  align-self: flex-end;
+}
