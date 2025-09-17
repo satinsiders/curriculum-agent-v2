@@ -1,144 +1,232 @@
-/* 0. Full‐viewport reset & base */
+/*
+  Modern tech-y UI: dark glass, neon accents, gentle motion.
+  Theme tokens via CSS variables with light/dark palettes.
+*/
+
+/* 0) Base reset & font stack */
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: #f7f7f8;
-  font-family: "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body, input, button { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+
+/* 1) Design tokens */
+:root {
+  /* spacing & shape */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --shadow-1: 0 8px 30px rgba(0,0,0,0.25);
+  --shadow-2: 0 2px 10px rgba(0,0,0,0.18);
+
+  /* default to dark values; themed below */
+  --bg: #0b1220;
+  --txt: #e6e8ee;
+  --muted: #9aa4b2;
+  --surface-1: rgba(17, 24, 39, 0.64);
+  --surface-2: rgba(31, 41, 55, 0.6);
+  --border: rgba(148, 163, 184, 0.22);
+  --border-strong: rgba(148, 163, 184, 0.45);
+  --accent: #22d3ee;   /* cyan */
+  --accent-2: #10b981; /* emerald */
 }
 
-/* 1. Body as flex container, center both axes */
+/* Dark theme */
+body.theme-dark {
+  --bg: #0b1220;
+  --txt: #e6e8ee;
+  --muted: #9aa4b2;
+  --surface-1: rgba(17, 24, 39, 0.64);
+  --surface-2: rgba(31, 41, 55, 0.6);
+  --border: rgba(148, 163, 184, 0.22);
+  --border-strong: rgba(148, 163, 184, 0.45);
+}
+
+/* Light theme */
+body.theme-light {
+  --bg: #f7f8fb;
+  --txt: #0f172a;
+  --muted: #475569;
+  --surface-1: rgba(255, 255, 255, 0.7);
+  --surface-2: rgba(255, 255, 255, 0.85);
+  --border: rgba(15, 23, 42, 0.08);
+  --border-strong: rgba(15, 23, 42, 0.15);
+}
+
+/* 2) Stage (background) */
 body {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;    /* vertical centering */
-  align-items: center;        /* horizontal centering */
-  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  background:
+    radial-gradient(1200px 800px at 10% -10%, rgba(56, 189, 248, 0.18), transparent 40%),
+    radial-gradient(1000px 600px at 90% 110%, rgba(16, 185, 129, 0.16), transparent 45%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg) 100%);
+  color: var(--txt);
   transition: justify-content 0.4s ease;
 }
+body.started { justify-content: flex-end; }
 
-/* 2. Once chat is “started,” push down but keep center horizontally */
-body.started {
-  justify-content: flex-end;
-  align-items: center;        /* keep it in the middle */
-}
-
-/* 3. Chat container (card) */
+/* 3) App card */
 #card {
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;             /* absolute horizontal centering */
-  background: #ffffff;
-  overflow-x: visible;        /* allow buttons full visibility */
-  transition: height 0.4s ease;
-  height: auto;               /* initially only as tall as its content */
-}
-
-/* 4. On started, expand to full height and switch to grid */
-body.started #card {
+  max-width: 960px;
+  margin: 0 auto;
+  background: var(--surface-1);
+  backdrop-filter: saturate(140%) blur(18px);
+  -webkit-backdrop-filter: saturate(140%) blur(18px);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
   display: grid;
-  grid-template-rows: 1fr auto;  /* logs fill, input pinned below */
-  height: 100vh;
-  overflow: hidden;              /* grid’s rows manage their own scroll */
+  grid-template-rows: auto 1fr auto; /* header, logs, input */
+  transition: height 0.4s ease;
+}
+body.started #card {
+  height: 100vh;    /* fill viewport once started */
 }
 
-/* 5. Logs pane: hidden until “started,” then scrolls within its cell */
-#logs {
-  display: none;
+/* 4) Header */
+#app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
 }
+.brand { display: flex; align-items: center; gap: var(--space-3); }
+.brand-title { margin: 0; font-size: 16px; letter-spacing: 0.2px; font-weight: 600; color: var(--txt); }
+.logo-dot {
+  width: 14px; height: 14px; border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.15), 0 0 18px rgba(34, 211, 238, 0.5);
+}
+.icon-btn {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color .2s ease, color .2s ease, background .2s ease, transform .1s ease;
+}
+.icon-btn:hover { color: var(--txt); border-color: var(--border-strong); transform: translateY(-1px); }
+.icon { width: 18px; height: 18px; display: block; }
+body.theme-dark .icon.moon { display: none; }
+body.theme-light .icon.sun { display: none; }
+
+/* 5) Logs */
+#logs { display: none; }
 body.started #logs {
   display: flex;
   flex-direction: column;
-  padding: 24px 16px;
-  gap: 12px;
+  gap: var(--space-3);
+  padding: var(--space-5);
   overflow-y: auto;
-  min-height: 0;               /* necessary for flex/grid scroll to work */
-  grid-row: 1;
+  min-height: 0; /* grid scroll */
 }
 
-/* 6. Chat input bar: always full-width, pinned in grid row 2 */
+/* 6) Chat input bar */
 #chatbox {
   display: flex;
   align-items: center;
-  gap: 8px;                    /* space between input & buttons */
+  gap: var(--space-3);
   width: 100%;
-  padding: 12px 16px;
-  border-top: 1px solid #e2e2e2;
-  background: #ffffff;
-  box-sizing: border-box;
-  grid-row: 2;
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
 }
 
-/* 7. Text input: shrinkable so buttons never get pushed out */
 #topic {
-  flex: 1;
-  min-width: 0;                /* allows it to shrink below its content width */
-  padding: 12px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  flex: 1; min-width: 0;
+  padding: 12px 14px;
+  color: var(--txt);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  outline: none;
   font-size: 16px;
   line-height: 1.5;
-  background: #fafafa;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
 }
+#topic::placeholder { color: var(--muted); }
 #topic:focus {
-  border-color: #a3a3a3;
-  background: #ffffff;
-  outline: none;
+  border-color: var(--border-strong);
+  background: rgba(255,255,255,0.09);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.15);
 }
 
-/* 8. “Go” button */
+#send, #stop-Btn {
+  height: 42px; padding: 0 18px;
+  font-size: 15px; font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  cursor: pointer; user-select: none;
+  transition: transform .06s ease, box-shadow .2s ease, opacity .2s ease, background .2s ease, color .2s ease;
+}
 #send {
-  height: 40px;
-  padding: 0 20px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #0b1220;
   border: none;
-  border-radius: 8px;
-  background: #10a37f;
-  color: #ffffff;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
+  box-shadow: 0 6px 18px rgba(34, 211, 238, 0.28);
 }
-#send:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-#send:hover:not(:disabled) {
-  background: #0e8c6d;
-}
+#send:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(34, 211, 238, 0.35); }
+#send:active:not(:disabled) { transform: translateY(0); }
+#send:disabled { opacity: 0.55; cursor: default; }
 
-/* 9. “Stop” button (red) */
 #stop-Btn {
-  height: 40px;
-  padding: 0 20px;
-  border: none;
-  border-radius: 8px;
-  background: #e53e3e;
-  color: #ffffff;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background 0.2s;
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.35);
 }
-#stop-Btn:hover {
-  background: #c53030;
+#stop-Btn:hover { background: rgba(239, 68, 68, 0.18); color: #fecaca; }
+
+/* 7) Messages */
+.log-entry {
+  max-width: 72%;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  color: var(--txt);
+  font-size: 16px; line-height: 1.5;
+  margin: 2px 0;
+  align-self: flex-start;
+  box-shadow: var(--shadow-2);
+}
+.log-entry.active { outline: 2px solid rgba(34, 211, 238, 0.2); }
+.log-entry.user {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(16, 185, 129, 0.18));
+  border-color: rgba(34, 211, 238, 0.35);
+  align-self: flex-end;
 }
 
-/* 10. Chat bubbles */
-.log-entry {
-  max-width: 70%;
-  padding: 12px 16px;
-  border-radius: 18px;
-  background: #f1f1f1;
-  color: #111111;
-  font-size: 16px;
-  line-height: 1.4;
-  margin: 4px 0;
-  align-self: flex-start;
+/* 8) Loading spinner */
+#loading-spinner {
+  width: 28px; height: 28px;
+  border-radius: 999px;
+  background: conic-gradient(from 0deg, var(--accent), transparent 60%);
+  mask: radial-gradient(farthest-side, transparent 55%, #000 56%);
+  -webkit-mask: radial-gradient(farthest-side, transparent 55%, #000 56%);
+  animation: spin 1s linear infinite;
+  margin: 12px auto;
 }
-.log-entry.active {
-  background: #e2e2e2;
-}
-.log-entry.user {
-  background: #d3f3eb;
-  align-self: flex-end;
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 9) Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
 }

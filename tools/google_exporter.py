@@ -5,6 +5,7 @@ from typing import List, Optional
 
 import httplib2
 from google.oauth2 import service_account
+import json
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google_auth_httplib2 import AuthorizedHttp
@@ -26,8 +27,19 @@ EXPORT_FOLDER_ID: Optional[str] = None
 
 
 def _get_creds():
+    # 1) Prefer inline JSON from env (ideal for Render)
+    json_env = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+    if json_env:
+        try:
+            info = json.loads(json_env)
+            return service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
+        except Exception as exc:
+            raise RuntimeError("Failed parsing GOOGLE_APPLICATION_CREDENTIALS_JSON") from exc
+
+    # 2) Fallback to file path from env
     key_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     if not key_path:
+        # 3) Local default file in repo (gitignored)
         local = os.path.join(os.path.dirname(__file__), "google_sa.json")
         if os.path.exists(local):
             key_path = local
@@ -35,13 +47,12 @@ def _get_creds():
     if not key_path or not os.path.isfile(key_path):
         raise RuntimeError(
             f"Service account JSON not found. Checked: "
+            f"GOOGLE_APPLICATION_CREDENTIALS_JSON (env), "
             f"{os.getenv('GOOGLE_APPLICATION_CREDENTIALS')}, "
             f"{local if 'local' in locals() else 'N/A'}"
         )
 
-    return service_account.Credentials.from_service_account_file(
-        key_path, scopes=SCOPES
-    )
+    return service_account.Credentials.from_service_account_file(key_path, scopes=SCOPES)
 
 
 def _build_service(api_name: str, version: str):

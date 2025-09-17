@@ -3,27 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1220" />
   <title>Curriculum Agent</title>
-  <!-- main stylesheet -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
-<body>
-  <div id="card">
-    <div id="logs"></div>
-    <div id="chatbox">
-      <input id="topic" type="text" placeholder="Enter topic…" />
-      <button id="send">Go</button>
-      <button id="stop-Btn">stop</button>
-    </div>
+<body class="theme-dark">
+  <div id="card" role="application" aria-label="Curriculum Agent chat">
+    <header id="app-header">
+      <div class="brand">
+        <span class="logo-dot" aria-hidden="true"></span>
+        <h1 class="brand-title">Curriculum Agent</h1>
+      </div>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn" aria-label="Toggle theme" title="Toggle theme">
+          <svg class="icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+          </svg>
+          <svg class="icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="logs" aria-live="polite" aria-atomic="false"></main>
+
+    <form id="chatbox" autocomplete="off" onsubmit="return false;">
+      <input id="topic" type="text" placeholder="Ask me to generate a curriculum…" aria-label="Topic" />
+      <button id="send" type="button">Generate</button>
+      <button id="stop-Btn" type="button" class="alt">Stop</button>
+    </form>
   </div>
 
-  <!-- Socket.IO client -->
-  <script
-    src="https://cdn.socket.io/4.5.4/socket.io.min.js"
-    integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI"
-    crossorigin="anonymous">
-  </script>
-  <!-- main JavaScript -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js" integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI" crossorigin="anonymous"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

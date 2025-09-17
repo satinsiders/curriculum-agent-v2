@@ -1,46 +1,66 @@
 document.addEventListener("DOMContentLoaded", () => {
   const socket  = io();
-  const chatbox = document.getElementById("chatbox");
   const logs    = document.getElementById("logs");
   const sendBtn = document.getElementById("send");
-  const stopBtn = document.getElementById("stop-Btn")
+  const stopBtn = document.getElementById("stop-Btn");
   const input   = document.getElementById("topic");
-    
-  if (!stopBtn) throw new Error("❌ stop-Btn element not found in DOM");
+  const themeToggle = document.getElementById("theme-toggle");
 
+  if (!stopBtn) throw new Error("❌ stop-Btn element not found in DOM");
   console.log("🖥️ [main.js] script loaded");
 
+  // Theme init
+  try {
+    const stored = localStorage.getItem("theme");
+    if (stored === "light") {
+      document.body.classList.remove("theme-dark");
+      document.body.classList.add("theme-light");
+    }
+  } catch {}
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const isDark = document.body.classList.toggle("theme-light");
+      document.body.classList.toggle("theme-dark", !isDark);
+      try { localStorage.setItem("theme", isDark ? "light" : "dark"); } catch {}
+    });
+  }
+
   function showLog(msg) {
-    // remove spinner if present
     const spinner = document.getElementById("loading-spinner");
     if (spinner) spinner.remove();
 
-    // “undim” only the newest entry, dim the rest
-    logs.querySelectorAll(".log-entry.active").forEach(entry => {
-      entry.classList.remove("active");
-    });
-
-    // create & append the new, active entry
+    logs.querySelectorAll(".log-entry.active").forEach(entry => entry.classList.remove("active"));
     const entry = document.createElement("div");
     entry.className = "log-entry active";
     entry.textContent = msg;
     logs.appendChild(entry);
-
-    // smoothly scroll to bottom
     logs.scrollTo({ top: logs.scrollHeight, behavior: "smooth" });
 
-    console.log("📝 [main.js] showLog():", msg);
+    // Re-enable send if we see a finish/error/stop line
+    if (/Finished generation|Generation error|stopped/i.test(msg)) {
+      sendBtn.disabled = false;
+    }
+  }
+
+  function showUserLog(msg) {
+    const entry = document.createElement("div");
+    entry.className = "log-entry user";
+    entry.textContent = msg;
+    logs.appendChild(entry);
   }
 
   sendBtn.addEventListener("click", () => {
-    // on first send, flip to "started" layout
     if (!document.body.classList.contains("started")) {
-          document.body.classList.add("started");
+      document.body.classList.add("started");
     }
     const topic = input.value.trim();
     if (!topic) return;
 
-    logs.innerHTML        = '<div id="loading-spinner"></div>';
+    // Echo the user request and show spinner
+    showUserLog(topic);
+    logs.innerHTML += '<div id="loading-spinner"></div>';
+    sendBtn.disabled = true;
 
     fetch("/generate", {
       method:  "POST",
@@ -56,7 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
   stopBtn.addEventListener("click", () => {
     console.log("🛑 [main.js] stopBtn clicked");
     socket.emit("stop_generation");
+    sendBtn.disabled = false;
   });
-    
+
   socket.on("log", msg => showLog(msg));
 });
