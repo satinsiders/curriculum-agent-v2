@@ -86,3 +86,6 @@ async def process_lesson(
         return None
 
     return lesson_id, doc_url, sheets
+
+# Backwards compatibility for modules still importing the old name
+_process_lesson = process_lesson
