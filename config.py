@@ -15,9 +15,9 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ROOT = Path(__file__).parent
 PROMPTS_DIR = ROOT / "prompts"
 
-MODEL_THINK = os.getenv("MODEL_THINK", "o3")
-MODEL_HEAVY = os.getenv("MODEL_HEAVY", "gpt-4.1")
-MODEL_LIGHT = os.getenv("MODEL_LIGHT", "o4-mini")
+MODEL_THINK = os.getenv("MODEL_THINK", "gpt-5")
+MODEL_HEAVY = os.getenv("MODEL_HEAVY", "gpt-5-mini")
+MODEL_LIGHT = os.getenv("MODEL_LIGHT", "gpt-5-nano")
 
 # ──────────────────────────────
 # WORKFLOW CONFIG

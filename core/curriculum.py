@@ -7,7 +7,7 @@ from typing import Any, Dict
 
 from config import MAX_LOOPS, MAX_PARALLEL_LESSONS
 from core.agents import brainstormer, reviewer
-from core.processor import _process_lesson
+from core.processor import process_lesson
 from models.spec import LessonSpec
 
 from utils.retry_helpers import run_with_retry, looper
@@ -24,18 +24,25 @@ async def generate_curriculum(topic: str) -> Dict[str, Any]:
     _base_logger.info(f"🚀 Starting curriculum generation for topic: {topic!r}")
 
     # 1️⃣ Outline brainstorm + QA loop via looper
+    last_review: Dict[str, Any] = {}
+
     async def run_brain(payload: Any):
+        # Return the raw brainstormer output; reviewer will evaluate inside success_fn.
         return (await run_with_retry(brainstormer, payload, "Outline")).final_output
 
     async def review_success(raw: str) -> bool:
-        review = safe_json((await run_with_retry(reviewer, raw, "Outline")).final_output)
+        nonlocal last_review
+        last_review = safe_json((await run_with_retry(reviewer, raw, "Outline")).final_output)
         _base_logger.info(
-            f"✅ Reviewer status: {review.get('status')} • Feedback: {review.get('feedback')!r}"
+            f"✅ Reviewer status: {last_review.get('status')} • Feedback: {last_review.get('feedback')!r}"
         )
-        return review.get("status") == "approve"
+        return last_review.get("status") == "approve"
 
     async def update_outline(payload: Any, raw: str) -> Any:
-        feedback = safe_json((await run_with_retry(reviewer, raw, "Outline")).final_output).get("feedback", "")
+        nonlocal last_review
+        # Re-use the reviewer feedback captured in review_success to avoid a duplicate call.
+        feedback = last_review.get("feedback", "") if last_review else ""
+        last_review = {}
         return {"topic": topic, "previous": raw, "feedback": feedback}
 
     raw_outline = await looper(
@@ -86,7 +93,7 @@ async def generate_curriculum(topic: str) -> Dict[str, Any]:
         logger.info(f"⚙️ Processing {lesson_id}: {spec.title!r}")
         async with sem:
             try:
-                result = await _process_lesson(idx, spec)
+                result = await process_lesson(idx, spec)
                 if result:
                     logger.info(f"✅ {lesson_id} completed successfully.")
                 else:

@@ -3,38 +3,121 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b1220" />
+  <meta name="theme-color" content="#070b14" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)" />
   <title>Curriculum Agent</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
 </head>
 <body class="theme-dark">
-  <div id="card" role="application" aria-label="Curriculum Agent chat">
+  <div class="ambient" aria-hidden="true"></div>
+
+  <div class="app-shell" role="application" aria-label="Curriculum Agent chat interface">
     <header id="app-header">
-      <div class="brand">
-        <span class="logo-dot" aria-hidden="true"></span>
-        <h1 class="brand-title">Curriculum Agent</h1>
+      <div class="brand" aria-label="Curriculum Agent">
+        <span class="brand__glyph" aria-hidden="true"></span>
+        <div class="brand__copy">
+          <h1 class="brand__name">Curriculum Agent</h1>
+          <p class="brand__tagline">Multi-agent curriculum designer</p>
+        </div>
       </div>
-      <div class="header-actions">
+      <div class="header-controls">
+        <span id="status-pill" role="status" aria-live="polite" data-state="idle">Awaiting prompt</span>
         <button id="theme-toggle" class="icon-btn" aria-label="Toggle theme" title="Toggle theme">
-          <svg class="icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="4"></circle>
-            <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+          <svg
+            class="icon sun"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="5"></circle>
+            <path
+              d="M12 1v3m0 16v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3m16 0h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"
+            />
           </svg>
-          <svg class="icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg
+            class="icon moon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
           </svg>
         </button>
       </div>
     </header>
 
-    <main id="logs" aria-live="polite" aria-atomic="false"></main>
+    <section class="hero-copy" aria-hidden="true">
+      <p class="hero-copy__lede">Orchestrate a crew of specialist agents to craft precise learning roadmaps.</p>
+      <div class="hero-copy__pills">
+        <span>Brainstorm → Review → Lesson build</span>
+        <span>Live socket stream</span>
+        <span>Interrupt anytime</span>
+      </div>
+    </section>
 
-    <form id="chatbox" autocomplete="off" onsubmit="return false;">
-      <input id="topic" type="text" placeholder="Ask me to generate a curriculum…" aria-label="Topic" />
-      <button id="send" type="button">Generate</button>
-      <button id="stop-Btn" type="button" class="alt">Stop</button>
+    <main id="chat-scroll" aria-live="polite" aria-atomic="false">
+      <ol id="messages" class="messages">
+        <li class="message assistant intro">
+          <div class="message__bubble">
+            <p class="message__eyebrow">Assistant</p>
+            <p class="message__text">
+              Welcome. I'm here to orchestrate curriculum design across the brainstormer, reviewer, and lesson
+              builders. Drop a topic and I'll take it from ideation to execution.
+            </p>
+            <ul class="message__list">
+              <li>Kick off with a topic or intent, e.g. "Design a 4-week prompt engineering bootcamp".</li>
+              <li>Follow the live build log as each agent collaborates in real time.</li>
+              <li>Interrupt or refine at any moment—the plan adapts immediately.</li>
+            </ul>
+          </div>
+        </li>
+      </ol>
+    </main>
+
+    <form id="chatbox" class="composer" autocomplete="off" novalidate>
+      <label class="composer__field" for="topic">
+        <textarea
+          id="topic"
+          name="topic"
+          rows="1"
+          placeholder="Describe the curriculum you want to build…"
+          aria-label="Message Curriculum Agent"
+          spellcheck="true"
+        ></textarea>
+      </label>
+      <div class="composer__actions">
+        <button id="send" type="button" class="btn primary">Launch build</button>
+        <button id="stop-Btn" type="button" class="btn subtle" disabled>Stop</button>
+      </div>
     </form>
+
+    <footer class="app-footer">
+      <span>Built for precision learning roadmaps</span>
+      <span class="footer-dot" aria-hidden="true"></span>
+      <span>Realtime logging via Socket.IO</span>
+    </footer>
   </div>
+
+  <template id="log-line-template">
+    <div class="log-line">
+      <span class="log-line__icon" aria-hidden="true"></span>
+      <span class="log-line__text"></span>
+    </div>
+  </template>
 
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js" integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI" crossorigin="anonymous"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
